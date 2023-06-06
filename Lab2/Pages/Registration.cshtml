@@ -1,0 +1,132 @@
+﻿@page
+@model Lab2.Pages.RegistrationModel
+@using AcademicManagement
+@{
+    ViewData["Title"] = "Registration";
+    SelectList Options = new SelectList(DataAccess.GetAllStudents(), "StudentId", "StudentName");
+    Model.CourseSelections = new List<SelectListItem>();
+    foreach (Course cs in DataAccess.GetAllCourses())
+    {
+        Model.CourseSelections.Add(new SelectListItem(cs.CourseTitle, cs.CourseCode, false));
+    }
+
+}
+<div class="text-left">
+    <h1>Registrations</h1>
+    <hr />
+</div>
+
+<form method="post" asp-page-handler="StudentSelected">
+<div class="row">
+    <div class="col-md-3">
+        <select asp-for="SelectedStudentId" asp-items="Options" class="form-control">
+            <option value="-1">Choose a Student</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+            <button type="submit" class="btn btn-primary">Get Registrations</button>
+    </div>
+</div>
+</form>
+<br />
+@if (Model.SelectedStudentId == "-1")
+{
+    <p class="alert-primary">
+        You must select a student!.
+    </p>
+}
+<form method="post" asp-page-handler="Register">
+<input type="hidden" asp-for="@Model.SelectedStudentId;"/>
+    @if (Model.RecordsCount == 0 && Model.SelectedStudentId != "-1")
+    {
+
+        @if (Model.alert == 0)
+        {
+            <p class="alert-primary">
+                You must select at least one course!
+            </p>
+            <p class="alert-primary" style="display:none">
+                The Student has not registered any course. Select course(s) to register.
+            </p>
+        }
+
+        @if (Model.alert != 0)
+        {
+            <p class="alert-primary" style="display:none">
+                You must select at least one course!
+            </p>
+            <p class="alert-primary">
+                The Student has not registered any course. Select course(s) to register.
+            </p>
+        }
+        <div>
+            <hr />
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Course Code</th>
+                        <th scope="col">Course Title</th>
+                        <th scope="col">Check to Register</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    @for (int i = 0; i < Model.CourseSelections.Count(); i++)
+                    {
+                        <tr>
+                            <td>
+                                <input type="hidden" asp-for="@Model.CourseSelections[i].Value" />
+                                @Model.CourseSelections[i].Value
+                            </td>
+                            <td>
+                                <input type="hidden" asp-for="@Model.CourseSelections[i].Value" />
+                                @Model.CourseSelections[i].Text
+                            </td>
+                            <td> <input asp-for="@Model.CourseSelections[i].Selected" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">Register</button>
+            </div>
+        </div>
+
+
+
+
+        
+    }
+    else if (Model.RecordsCount > 0)
+    {
+        <p class="alert-primary">
+            The student has registered for the following courses.
+        </p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        <label class="control-label">Course Code</label>
+                    </th>
+                    <th>
+                        <label class="control-label">Course Title</label>
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider">
+                @if (Model.AcademicRecordsRegistered != null)
+                {
+                    foreach (var item in Model.AcademicRecordsRegistered)
+                    {
+                        <tr>
+                            <td>@item.CourseCode</td>
+                            <td>@item.CourseTitle</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    }
+</form>
